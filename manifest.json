@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "Chrome Extension",
+  "description": "This is an extension, hopefully it works!",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "popup.html",
+    "default_title": "Quick Direct"
+  },
+  "permissions": [
+    "activeTab",
+    "https://maps.googleapis.com/*",
+    "https://ajax.googleapis.com/",
+    "geolocation",
+    "storage"
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://maps.googleapis.com"
+}

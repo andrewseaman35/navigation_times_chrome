@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Directions Popup</title>
+    <link rel="stylesheet" href="mdl/material.min.css"/>
+    <script src="/mdl/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+    <script type="text/javascript" src="js/jquery-2.1.4.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/popup.css">
+    <script type="text/javascript" src="js/settings.js"></script>
+    <script type="text/javascript" src="js/popup.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div id="content">
+        <div id="table_div">
+            <table id="input_table" class="mdl-data-table mdl-js-data-table">
+                <tr>
+                    <th class="col_left">Waypoint</th>
+                    <th>Result</th>
+                    <th></th> 
+                </tr>
+                <tr>
+                    <td class="col_left"><input type=text id="src" class="table_input"></input></td>
+                    <td></td>
+                    <td><button id="location_button" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored"><i class="material-icons">location_on</i></button><button id="add_row_button" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored"><i class="material-icons">add_circle</i></button></td>
+                </tr>
+                <tr>
+                    <td class="col_left"><input type=text id="dest" class="table_input"></input></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+        <div id="total_duration">Total Duration</div>
+        <div id="bottom_bar">
+            <button id="settings_button" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored"><i class="material-icons">settings</i></button>
+            <div id="info_text"></div>
+            <button id="submit_button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Submit</button>
+        </div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCdl3uatjkM4ovv6cymJ3f3ZBVD1dbcKAc&signed_in=true&callback=apiCallback"
+        async defer></script>
+  </body>
+</html>
+
