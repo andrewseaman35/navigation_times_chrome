@@ -230,18 +230,22 @@ function apiCallback() {
 function initializeUI() {
     /* Sets up the UI elements as necessary.
      */
+    $("#submit_button").off('click')
     $("#submit_button").click(function() {
         getDirections();
     });
 
+    $("#add_row_button").off('click')
     $("#add_row_button").click(function() {
         addTableRow();
     });
 
+    $("#location_button").off('click')
     $("#location_button").click(function() {
         getUserLocation(false);
     });
 
+    $("#settings_button").off('click')
     $("#settings_button").click(function() {
         displaySettings();
     });
@@ -395,6 +399,8 @@ function displayWaypoints() {
     fillTable(table, false);
 
     toggleSettingsButton(true);
+
+    initializeUI()
 }
 
 function displaySettings() {
