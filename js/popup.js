@@ -28,10 +28,10 @@ function init() {
 }
 
 function validateInput() {
-    /* Valides input from UI and displays any errors if necessar
+    /* Valides input from UI and displays any errors if necessary
      *
      * Returns:
-     *   bool, True if valud, False otherwise
+     *   bool, True if valid, False otherwise
      */
 
     // Check to see if there are any empty inputs
@@ -60,6 +60,20 @@ function validateInput() {
     return true;
 }
 
+function findFavorite(checkString) {
+    /* Checks to see if the inputted string is saved in the saved
+     * locations. If it is, returns the location string, if it is not,
+     * returns false
+     */
+    for (var key in FAVORITES) {
+        if (key.toLowerCase() == checkString.toLowerCase()) {
+            return FAVORITES[key]
+        }
+    }
+
+    return false
+}
+
 function getDirections() {
     /* Gathers all inputted information from the UI and validates. 
      * Parses into directions request and submits to directions service.
@@ -83,7 +97,12 @@ function getDirections() {
             waypoints.push({
                 location: userLatLng
             })
-            // Otherwise, push the input
+        // Also check to see if it's saved in the favorites
+        } else if (fav_location = findFavorite(val)) {
+            waypoints.push({
+                location: fav_location
+            })
+        // Otherwise, push the input
         } else {
             waypoints.push({
                 location: table.rows[i].cells[0].children[0].value
@@ -91,27 +110,33 @@ function getDirections() {
         }
     }
 
-    // User the user's location as the source if requested
+    // Use the user's location as the source if requested
     source = $("#src").val();
     if (source.toLowerCase() == MY_LOCATION) {
         source = userLatLng;
+    // Use a favorite if it's listed there
+    } else if (fav_location = findFavorite(source)) {
+        source = fav_location;
     }
 
     // Use the user's location as the destination if requested
     destination = $("#dest").val();
     if (destination.toLowerCase() == MY_LOCATION) {
         destination = userLatLng;
+    // Use a favorite if it's listed there
+    } else if (fav_location = findFavorite(destination)) {
+        destination = fav_location;
     }
 
     driving_options = {};
 
     // Put together the directions request 
     dir_request = {
+        origin: source,
+        waypoints: waypoints,
         destination: destination,
         optimizeWaypoints: false,
-        origin: source,
-        travelMode: google.maps.TravelMode.DRIVING,
-        waypoints: waypoints
+        travelMode: google.maps.TravelMode.DRIVING
     };
 
     dir_service.route(dir_request, function(dir_result, dir_status) {
@@ -222,25 +247,29 @@ function initializeUI() {
     });
 }
 
-function displaySettings() {
-    /* Displays the settings version of the popup to the user. 
-     * Javascript pertaining to settings is contained in js/settings.js.
-     * This function only goes from query to settings views.
+function toggleSettingsButton(settings_on_click) {
+    /* Toggles the settings button between showing settings and showing
+     * waypoints
      */
-    $("#submit_button").click(function() {
-        saveSettings();
-    });
+    icon = settings_on_click ? 'settings' : 'directions';
+    button_html = "<i class='material-icons'>" + icon + "</i>";
+    $("#settings_button").html(button_html)
+    $("#settings_button").off('click')
 
-    $("#settings_button").html("<i class='material-icons'>directions</i>")
-    $("#settings_button").click(function() {
-        displayWaypoints();
-    });
+    if (settings_on_click) {
+        $("#settings_button").click(function() {
+            displaySettings();
+        });
+    } else {
+        $("#settings_button").click(function() {
+            displayWaypoints();
+        });
+    }
+}
 
-    $("#total_duration").css("visibility", "invisible");
-
-    table = document.getElementById("input_table");
-
-    // Get rid of all the rows on the table
+function deleteAllRows(table) {
+    /* Deletes all rows from the given table
+     */
     num_rows = table.rows.length
     for (var i = 0; i < num_rows; i++) {
         table.deleteRow(-1);
@@ -249,20 +278,76 @@ function displaySettings() {
             $("html").height(htmlHeight - ROW_HEIGHT)
         }
     }
+}
 
+function makeHeaderRow(table, for_settings) {
+    
     // Make a new header row
     header_row = document.createElement("tr");
     place_head = document.createElement("th");
     loc_head = document.createElement("th");
 
+    if (!for_settings) {
+        button_head = document.createElement("th");
+        place_html = "Waypoint";
+        loc_html = "Result";
+    } else {
+        place_html = "Place";
+        loc_html = "Location";
+    }
+
     place_head.className = "col_left";
-    place_head.innerHTML = "Place";
-    loc_head.innerHTML = "Location";
+    place_head.innerHTML = place_html;
+    loc_head.innerHTML = loc_html;
     loc_head.className = "col_left";
     header_row.appendChild(place_head);
     header_row.appendChild(loc_head);
+    if (!for_settings) {
+        header_row.appendChild(button_head);
+    }
     table.appendChild(header_row);
+}
 
+function fillTable(table, for_settings) {
+    if (for_settings) {
+        return fillFavorites(table);
+    } else {
+        return fillWaypoints(table);
+    }
+}
+
+function setupRequiredWaypoints(source) {
+    new_row = document.createElement("tr");
+    waypoint_td = document.createElement("td");
+    result_td = document.createElement("td");
+    button_td = document.createElement("td");
+
+    if (source) {
+        button_td.innerHTML = "<button id='location_button' class='mdl-button mdl-js-button mdl-button--icon mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>location_on</i></button><button id='add_row_button' class='mdl-button mdl-js-button mdl-button--icon mdl-button--colored' data-upgraded=',MaterialButton'><i class='material-icons'>add_circle</i></button>";
+        waypoint_id = "src"
+    } else {
+        waypoint_id = "dest"
+    }
+
+    waypoint_td.className = "col_left";
+    waypoint_td.innerHTML = "<input type='text' id='" + waypoint_id + "' class='table_input'>";
+    new_row.appendChild(waypoint_td);
+    new_row.appendChild(result_td);
+    new_row.appendChild(button_td);
+
+    table.appendChild(new_row);
+
+    var htmlHeight = $("html").height()
+    $("html").height(htmlHeight + ROW_HEIGHT)
+
+}
+
+function fillWaypoints(table) {
+    setupRequiredWaypoints(true);
+    setupRequiredWaypoints(false);
+}
+
+function fillFavorites(table) {
     // Add all of the current favorite places
     for (var key in FAVORITES) {
         new_row = document.createElement("tr");
@@ -288,23 +373,52 @@ function displaySettings() {
         htmlHeight = $("html").height()
         $("html").height(htmlHeight + ROW_HEIGHT)
     }
+
 }
 
 function displayWaypoints() {
-    /* Displays the waypoints version of the popup to the user. 
-     * Javascript pertaining to settings is contained in js/settings.js.
-     * This function only goes from settings to waypoints views.
+    /* Displays the waypoints version of the popup to the user.
      */
+    $("#submit_button").off('click')
     $("#submit_button").click(function() {
         getDirections();
     });
 
-    $("#settings_button").html("<i class='material-icons'>settings</i>");
-    $("#settings_button").click(function() {
-        displaySettings();
+    $("#total_duration").css("visibility", "visible");
+
+    table = document.getElementById("input_table");
+
+    deleteAllRows(table);
+
+    makeHeaderRow(table, false);
+
+    fillTable(table, false);
+
+    toggleSettingsButton(true);
+}
+
+function displaySettings() {
+    /* Displays the settings version of the popup to the user. 
+     * This function only goes from query to settings views.
+     */
+    $("#submit_button").off('click')
+    $("#submit_button").click(function() {
+        saveSettings();
     });
 
-    $("#total_duration").css("visibility", "visible");
+    $("#total_duration").css("visibility", "invisible");
+
+    table = document.getElementById("input_table");
+
+    // Get rid of all the rows on the table
+    deleteAllRows(table); 
+
+    // Make a new header row
+    makeHeaderRow(table, true);
+
+    fillTable(table, true);
+
+    toggleSettingsButton(false)
 }
 
 function saveSettings() {
@@ -313,9 +427,14 @@ function saveSettings() {
      */
     rows = document.getElementById("input_table").rows;
     num_rows = rows.length
+
+    // Go through all of the input rows and save them
     for (var i = 1; i < num_rows; i++) {
-        place = rows[i].children[0].value;
-        loc = rows[i].children[1].value;
+        // Get the inputted values for place and location
+        place = rows[i].cells[0].children[0].value;
+        loc = rows[i].cells[1].children[0].value;
+
+        // Only save them if their length is > 1
         if (place.length > 0 && loc.length > 0) {
             FAVORITES[place] = loc;
         }
